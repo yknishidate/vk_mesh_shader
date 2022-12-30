@@ -24,10 +24,10 @@ void main()
     uint primID = gl_GlobalInvocationID.x;
     uint subPrimID = gl_GlobalInvocationID.y;
 
-    uint i0 = indices.i[3 * primID + 0]; 
-    uint i1 = indices.i[3 * primID + 1]; 
-    uint i2 = indices.i[3 * primID + 2];
-    uint i3 = indices.i[3 * primID + 3];
+    uint i0 = indices.i[4 * primID + 0]; 
+    uint i1 = indices.i[4 * primID + 1]; 
+    uint i2 = indices.i[4 * primID + 2];
+    uint i3 = indices.i[4 * primID + 3];
     vec4 vps[] = {
         vec4(vertices.v[i0]),
         vec4(vertices.v[i1]),
