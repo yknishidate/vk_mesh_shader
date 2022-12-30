@@ -4,6 +4,7 @@ struct PushConstants {
     glm::mat4 model { 1 };
     glm::mat4 view { 1 };
     glm::mat4 proj { 1 };
+    int subdivision = 0;
 };
 
 int main()
@@ -14,7 +15,6 @@ int main()
         Context::init();
 
         Swapchain swapchain {};
-        GUI gui { swapchain };
 
         std::vector<Vertex> vertices {
             { { 1, -1, 0 } },
@@ -22,8 +22,9 @@ int main()
             { { -1, 1, 0 } },
             { { -1, -1, 0 } }
         };
-        std::vector<Index> indices { 0, 1, 3, 1, 2, 3 };
-        Mesh mesh { vertices, indices };
+        std::vector<Index> indices { 0, 1, 2, 3 };
+        DeviceBuffer vertexBuffer { BufferUsage::Storage, vertices };
+        DeviceBuffer indexBuffer { BufferUsage::Storage, indices };
 
         Camera camera { Window::getWidth(), Window::getHeight() };
 
@@ -33,8 +34,8 @@ int main()
         DescriptorSet descSet;
         descSet.addResources(meshShader);
         descSet.addResources(fragShader);
-        descSet.record("Vertices", mesh.getVertexBuffer());
-        descSet.record("Indices", mesh.getIndexBuffer());
+        descSet.record("Vertices", vertexBuffer);
+        descSet.record("Indices", indexBuffer);
         descSet.allocate();
 
         GraphicsPipeline pipeline { descSet };
@@ -43,27 +44,34 @@ int main()
         pipeline.setup(swapchain, sizeof(PushConstants));
 
         int frame = 0;
+        PushConstants constants;
         while (!Window::shouldClose()) {
             Window::pollEvents();
             camera.processInput();
 
-            gui.startFrame();
-            gui.button("Subdivision");
-
-            PushConstants pushConstants;
-            pushConstants.model = glm::rotate(glm::mat4(1.0f), 0.01f * frame, glm::vec3(0.0f, 1.0f, 0.0f));
-            pushConstants.proj = camera.getProj();
-            pushConstants.view = camera.getView();
+            glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), 0.01f * frame, glm::vec3(0.0f, 1.0f, 0.0f));
+            constants.proj = camera.getProj();
+            constants.view = camera.getView();
 
             swapchain.waitNextFrame();
 
             CommandBuffer commandBuffer = swapchain.beginCommandBuffer();
             commandBuffer.bindPipeline(pipeline);
-            commandBuffer.pushConstants(pipeline, &pushConstants);
-            commandBuffer.clearBackImage({ 0.0f, 0.0f, 0.3f, 1.0f });
+            commandBuffer.clearBackImage({ 0.2f, 0.2f, 0.2f, 1.0f });
             commandBuffer.beginRenderPass();
-            commandBuffer.drawMeshTasks(mesh.getTriangleCount(), 3, 1); // 3 = subdiv count
-            commandBuffer.drawGUI(gui);
+
+            // Render default quad (triangulated)
+            constants.subdivision = 0;
+            constants.model = glm::translate(glm::vec3(-1.5, 0, 0)) * rotation;
+            commandBuffer.pushConstants(pipeline, &constants);
+            commandBuffer.drawMeshTasks(1, 1, 1);
+
+            // Render subdivided quad (triangulated)
+            constants.subdivision = 1;
+            constants.model = glm::translate(glm::vec3(1.5, 0, 0)) * rotation;
+            commandBuffer.pushConstants(pipeline, &constants);
+            commandBuffer.drawMeshTasks(1, 4, 1); // 4 = subdiv count
+
             commandBuffer.endRenderPass();
             commandBuffer.submit();
 
