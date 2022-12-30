@@ -34,24 +34,14 @@ layout(location = 0) out VertexOutput
     vec4 color;
 } vertexOutput[];
 
-const vec4[3] colors = {
-    vec4(0.0, 1.0, 0.0, 1.0),
-    vec4(0.0, 0.0, 1.0, 1.0),
-    vec4(1.0, 0.0, 0.0, 1.0)
-};
-
 void main()
 {
-//    uint primitiveID = gl_GlobalInvocationID.x / 3;
-//    Vertex v0 = unpackVertex(indices.i[3 * primitiveID + 0]);
-//    Vertex v1 = unpackVertex(indices.i[3 * primitiveID + 1]);
-//    Vertex v2 = unpackVertex(indices.i[3 * primitiveID + 2]);
-    Vertex v0 = unpackVertex(0);
-    Vertex v1 = unpackVertex(1);
-    Vertex v2 = unpackVertex(2);
+    uint primitiveID = gl_GlobalInvocationID.x / gl_NumWorkGroups.x;
+    Vertex v0 = unpackVertex(indices.i[3 * primitiveID + 0]);
+    Vertex v1 = unpackVertex(indices.i[3 * primitiveID + 1]);
+    Vertex v2 = unpackVertex(indices.i[3 * primitiveID + 2]);
 
     uint iid = gl_LocalInvocationID.x;
-
     vec4 offset = vec4(0.0, 0.0, gl_GlobalInvocationID.x, 0.0);
 
     SetMeshOutputsEXT(3, 1);
@@ -59,8 +49,8 @@ void main()
     gl_MeshVerticesEXT[0].gl_Position = mvp * (vec4(v0.pos, 1) + offset);
     gl_MeshVerticesEXT[1].gl_Position = mvp * (vec4(v1.pos, 1) + offset);
     gl_MeshVerticesEXT[2].gl_Position = mvp * (vec4(v2.pos, 1) + offset);
-    vertexOutput[0].color = colors[0];
-    vertexOutput[1].color = colors[1];
-    vertexOutput[2].color = colors[2];
+    vertexOutput[0].color = vec4(1.0, 0.0, 0.0, 1.0);
+    vertexOutput[1].color = vec4(0.0, 1.0, 0.0, 1.0);
+    vertexOutput[2].color = vec4(0.0, 0.0, 1.0, 1.0);
     gl_PrimitiveTriangleIndicesEXT[gl_LocalInvocationIndex] =  uvec3(0, 1, 2);
 }
