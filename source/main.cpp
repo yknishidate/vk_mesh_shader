@@ -27,6 +27,8 @@ int main()
         descSet.addResources(taskShader);
         descSet.addResources(meshShader);
         descSet.addResources(fragShader);
+        descSet.record("Vertices", mesh.getVertexBuffer());
+        descSet.record("Indices", mesh.getIndexBuffer());
         descSet.allocate();
 
         GraphicsPipeline pipeline { descSet };
