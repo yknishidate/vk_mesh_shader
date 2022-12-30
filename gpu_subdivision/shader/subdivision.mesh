@@ -14,13 +14,11 @@ layout(triangles, max_vertices = 4, max_primitives = 2) out;
 layout(binding = 0) buffer Vertices{vec4 v[];} vertices;
 layout(binding = 1) buffer Indices{uint i[];} indices;
 
-layout(location = 0) out VertexOutput
-{
+layout(location = 0) out VertexOutput {
     vec4 color;
 } vertexOutput[];
 
-void main()
-{
+void main() {
     uint primID = gl_GlobalInvocationID.x;
     uint subPrimID = gl_GlobalInvocationID.y;
 
