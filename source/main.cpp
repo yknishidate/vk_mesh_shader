@@ -32,12 +32,10 @@ int main()
         // Mesh mesh { "bunny.obj" };
         Camera camera { Window::getWidth(), Window::getHeight() };
 
-        Shader taskShader { "../shader/meshshader.task" };
         Shader meshShader { "../shader/meshshader.mesh" };
         Shader fragShader { "../shader/meshshader.frag" };
 
         DescriptorSet descSet;
-        descSet.addResources(taskShader);
         descSet.addResources(meshShader);
         descSet.addResources(fragShader);
         descSet.record("Vertices", mesh.getVertexBuffer());
@@ -45,7 +43,6 @@ int main()
         descSet.allocate();
 
         GraphicsPipeline pipeline { descSet };
-        pipeline.addShader(taskShader);
         pipeline.addShader(meshShader);
         pipeline.addShader(fragShader);
         pipeline.setup(swapchain, sizeof(PushConstants));
@@ -67,7 +64,7 @@ int main()
             commandBuffer.pushConstants(pipeline, &pushConstants);
             commandBuffer.clearBackImage({ 0.0f, 0.0f, 0.3f, 1.0f });
             commandBuffer.beginRenderPass();
-            commandBuffer.drawMeshTasks(2, 1, 1);
+            commandBuffer.drawMeshTasks(mesh.getTriangleCount(), 3, 1);
             commandBuffer.endRenderPass();
             commandBuffer.submit();
 
