@@ -11,24 +11,8 @@ layout(push_constant) uniform PushConstants {
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 layout(triangles, max_vertices = 4, max_primitives = 2) out;
 
-struct Vertex
-{
-    vec3 pos;
-    vec3 normal;
-    vec2 texCoord;
-};
-
-layout(binding = 0) buffer Vertices{float v[];} vertices;
+layout(binding = 0) buffer Vertices{vec4 v[];} vertices;
 layout(binding = 1) buffer Indices{uint i[];} indices;
-
-Vertex unpackVertex(uint index)
-{
-    uint stride = 8; // sizeof(Vertex)
-    uint offset = index * stride;
-    Vertex v;
-    v.pos = vec3(vertices.v[offset +  0], vertices.v[offset +  1], vertices.v[offset + 2]);
-    return v;
-}
 
 layout(location = 0) out VertexOutput
 {
@@ -37,49 +21,45 @@ layout(location = 0) out VertexOutput
 
 void main()
 {
-    uint primitiveID = gl_GlobalInvocationID.x;
-    uint subPrimtiveID = gl_GlobalInvocationID.y;
+    uint primID = gl_GlobalInvocationID.x;
+    uint subPrimID = gl_GlobalInvocationID.y;
 
-    uint is[] = {
-        indices.i[3 * primitiveID + 0], 
-        indices.i[3 * primitiveID + 1], 
-        indices.i[3 * primitiveID + 2],
-        indices.i[3 * primitiveID + 3],
-    };
-
-    vec3 vps[] = {
-        unpackVertex(is[0]).pos,
-        unpackVertex(is[1]).pos,
-        unpackVertex(is[2]).pos,
-        unpackVertex(is[3]).pos
+    uint i0 = indices.i[3 * primID + 0]; 
+    uint i1 = indices.i[3 * primID + 1]; 
+    uint i2 = indices.i[3 * primID + 2];
+    uint i3 = indices.i[3 * primID + 3];
+    vec4 vps[] = {
+        vec4(vertices.v[i0]),
+        vec4(vertices.v[i1]),
+        vec4(vertices.v[i2]),
+        vec4(vertices.v[i3]),
     }; 
     
     SetMeshOutputsEXT(4, 2);
     mat4 mvp = pushConstants.proj * pushConstants.view * pushConstants.model;
-
     if(pushConstants.subdivision == 0){
-        gl_MeshVerticesEXT[0].gl_Position = mvp * vec4(vps[0], 1);
-        gl_MeshVerticesEXT[1].gl_Position = mvp * vec4(vps[1], 1);
-        gl_MeshVerticesEXT[2].gl_Position = mvp * vec4(vps[2], 1);
-        gl_MeshVerticesEXT[3].gl_Position = mvp * vec4(vps[3], 1);
+        gl_MeshVerticesEXT[0].gl_Position = mvp * vps[0];
+        gl_MeshVerticesEXT[1].gl_Position = mvp * vps[1];
+        gl_MeshVerticesEXT[2].gl_Position = mvp * vps[2];
+        gl_MeshVerticesEXT[3].gl_Position = mvp * vps[3];
     }else{
         // face point
-        vec3 fp = (vps[0] + vps[1] + vps[2] + vps[3]) / 4.0;
+        vec4 fp = (vps[0] + vps[1] + vps[2] + vps[3]) / 4.0;
 
         // edge points
-        vec3 ep0 = (vps[(subPrimtiveID + 0) % 4] + vps[(subPrimtiveID + 1) % 4]) / 2.0;
-        vec3 ep1 = (vps[(subPrimtiveID + 3) % 4] + vps[(subPrimtiveID + 4) % 4]) / 2.0;
+        vec4 ep0 = (vps[(subPrimID + 0) % 4] + vps[(subPrimID + 1) % 4]) / 2.0;
+        vec4 ep1 = (vps[(subPrimID + 3) % 4] + vps[(subPrimID + 4) % 4]) / 2.0;
 
         // move original point
-        vec3 ep = (ep0 + ep1) / 2.0;
-        vec3 vp = (ep + vps[subPrimtiveID]) / 2.0;
+        vec4 ep = (ep0 + ep1) / 2.0;
+        vec4 vp = (ep + vps[subPrimID]) / 2.0;
 
         // new points
-        vec3 nps[] = { vp, ep0, fp, ep1, };
-        gl_MeshVerticesEXT[0].gl_Position = mvp * vec4(nps[0], 1);
-        gl_MeshVerticesEXT[1].gl_Position = mvp * vec4(nps[1], 1);
-        gl_MeshVerticesEXT[2].gl_Position = mvp * vec4(nps[2], 1);
-        gl_MeshVerticesEXT[3].gl_Position = mvp * vec4(nps[3], 1);
+        vec4 nps[] = { vp, ep0, fp, ep1, };
+        gl_MeshVerticesEXT[0].gl_Position = mvp * nps[0];
+        gl_MeshVerticesEXT[1].gl_Position = mvp * nps[1];
+        gl_MeshVerticesEXT[2].gl_Position = mvp * nps[2];
+        gl_MeshVerticesEXT[3].gl_Position = mvp * nps[3];
     }
     vertexOutput[0].color = vec4(1.0, 0.0, 0.0, 1.0);
     vertexOutput[1].color = vec4(0.0, 1.0, 0.0, 1.0);

@@ -16,13 +16,13 @@ int main()
 
         Swapchain swapchain {};
 
-        std::vector<Vertex> vertices {
-            { { 1, -1, 0 } },
-            { { 1, 1, 0 } },
-            { { -1, 1, 0 } },
-            { { -1, -1, 0 } }
+        std::vector<glm::vec4> vertices {
+            { 1, -1, 0, 1 },
+            { 1, 1, 0, 1 },
+            { -1, 1, 0, 1 },
+            { -1, -1, 0, 1 }
         };
-        std::vector<Index> indices { 0, 1, 2, 3 };
+        std::vector<uint32_t> indices { 0, 1, 2, 3 };
         DeviceBuffer vertexBuffer { BufferUsage::Storage, vertices };
         DeviceBuffer indexBuffer { BufferUsage::Storage, indices };
 
