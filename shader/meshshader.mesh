@@ -36,8 +36,8 @@ layout(location = 0) out VertexOutput
 
 void main()
 {
-    uint groupID = gl_GlobalInvocationID.y;
     uint primitiveID = gl_GlobalInvocationID.x;
+    uint meshID = gl_GlobalInvocationID.y;
     uint i0 = indices.i[3 * primitiveID + 0];
     uint i1 = indices.i[3 * primitiveID + 1];
     uint i2 = indices.i[3 * primitiveID + 2];
@@ -45,7 +45,7 @@ void main()
     Vertex v1 = unpackVertex(i1);
     Vertex v2 = unpackVertex(i2);
 
-    vec4 offset = vec4(0.0, 0.0, groupID, 0.0);
+    vec4 offset = vec4(0.0, 0.0, meshID, 0.0);
 
     SetMeshOutputsEXT(3, 1);
     mat4 mvp = pushConstants.proj * pushConstants.view * pushConstants.model;
