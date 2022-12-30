@@ -16,14 +16,15 @@ int main()
         Swapchain swapchain {};
         GUI gui { swapchain };
 
-        std::vector<Vertex> vertices {
-            { { 1, -1, 0 } },
-            { { 1, 1, 0 } },
-            { { -1, 1, 0 } },
-            { { -1, -1, 0 } }
+        std::vector<glm::vec4> vertices {
+            { 1, -1, 0, 1 },
+            { 1, 1, 0, 1 },
+            { -1, 1, 0, 1 },
+            { -1, -1, 0, 1 }
         };
-        std::vector<Index> indices { 0, 1, 3, 1, 2, 3 };
-        Mesh mesh { vertices, indices };
+        std::vector<uint32_t> indices { 0, 1, 3, 1, 2, 3 };
+        DeviceBuffer vertexBuffer { BufferUsage::Storage, vertices };
+        DeviceBuffer indexBuffer { BufferUsage::Storage, indices };
 
         Camera camera { Window::getWidth(), Window::getHeight() };
         camera.setPosition(0.0f, 0.0f, 20.0f);
@@ -34,8 +35,8 @@ int main()
         DescriptorSet descSet;
         descSet.addResources(meshShader);
         descSet.addResources(fragShader);
-        descSet.record("Vertices", mesh.getVertexBuffer());
-        descSet.record("Indices", mesh.getIndexBuffer());
+        descSet.record("Vertices", vertexBuffer);
+        descSet.record("Indices", indexBuffer);
         descSet.allocate();
 
         GraphicsPipeline pipeline { descSet };
@@ -64,7 +65,7 @@ int main()
             commandBuffer.pushConstants(pipeline, &pushConstants);
             commandBuffer.clearBackImage({ 0.0f, 0.0f, 0.3f, 1.0f });
             commandBuffer.beginRenderPass();
-            commandBuffer.drawMeshTasks(mesh.getTriangleCount(), instancesCount, 1);
+            commandBuffer.drawMeshTasks(2, instancesCount, 1);
             commandBuffer.drawGUI(gui);
             commandBuffer.endRenderPass();
             commandBuffer.submit();

@@ -10,24 +10,8 @@ layout(push_constant) uniform PushConstants {
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 layout(triangles, max_vertices = 3, max_primitives = 1) out;
 
-struct Vertex
-{
-    vec3 pos;
-    vec3 normal;
-    vec2 texCoord;
-};
-
-layout(binding = 0) buffer Vertices{float v[];} vertices;
+layout(binding = 0) buffer Vertices{vec4 v[];} vertices;
 layout(binding = 1) buffer Indices{uint i[];} indices;
-
-Vertex unpackVertex(uint index)
-{
-    uint stride = 8; // sizeof(Vertex)
-    uint offset = index * stride;
-    Vertex v;
-    v.pos = vec3(vertices.v[offset +  0], vertices.v[offset +  1], vertices.v[offset + 2]);
-    return v;
-}
 
 layout(location = 0) out VertexOutput
 {
@@ -41,17 +25,17 @@ void main()
     uint i0 = indices.i[3 * primitiveID + 0];
     uint i1 = indices.i[3 * primitiveID + 1];
     uint i2 = indices.i[3 * primitiveID + 2];
-    Vertex v0 = unpackVertex(i0);
-    Vertex v1 = unpackVertex(i1);
-    Vertex v2 = unpackVertex(i2);
+    vec4 v0 =  vec4(vertices.v[i0]);
+    vec4 v1 =  vec4(vertices.v[i1]);
+    vec4 v2 =  vec4(vertices.v[i2]);
 
     vec4 offset = vec4(0.0, 0.0, meshID, 0.0);
 
     SetMeshOutputsEXT(3, 1);
     mat4 mvp = pushConstants.proj * pushConstants.view * pushConstants.model;
-    gl_MeshVerticesEXT[0].gl_Position = mvp * (vec4(v0.pos, 1) + offset);
-    gl_MeshVerticesEXT[1].gl_Position = mvp * (vec4(v1.pos, 1) + offset);
-    gl_MeshVerticesEXT[2].gl_Position = mvp * (vec4(v2.pos, 1) + offset);
+    gl_MeshVerticesEXT[0].gl_Position = mvp * (v0 + offset);
+    gl_MeshVerticesEXT[1].gl_Position = mvp * (v1 + offset);
+    gl_MeshVerticesEXT[2].gl_Position = mvp * (v2 + offset);
     vertexOutput[0].color = vec4(1.0, 0.0, 0.0, 1.0);
     vertexOutput[1].color = vec4(0.0, 1.0, 0.0, 1.0);
     vertexOutput[2].color = vec4(0.0, 0.0, 1.0, 1.0);
