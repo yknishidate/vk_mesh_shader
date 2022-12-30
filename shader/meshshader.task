@@ -3,5 +3,5 @@
 
 void main()
 {
-    EmitMeshTasksEXT(5, 1, 1);
+    EmitMeshTasksEXT(5, 1, 1); // set gl_NumWorkGroups
 }

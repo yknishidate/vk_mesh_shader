@@ -14,9 +14,22 @@ int main()
         Context::init();
 
         Swapchain swapchain {};
-        std::vector<Vertex> vertices { { { -1, 0, 0 } }, { { 0, -1, 0 } }, { { 1, 0, 0 } } };
-        std::vector<Index> indices { 0, 1, 2 };
+
+        // Triangle
+        // std::vector<Vertex> vertices { { { -1, 0, 0 } }, { { 0, -1, 0 } }, { { 1, 0, 0 } } };
+        // std::vector<Index> indices { 0, 1, 2 };
+
+        // Quad
+        std::vector<Vertex> vertices {
+            { { 1, -1, 0 } },
+            { { 1, 1, 0 } },
+            { { -1, 1, 0 } },
+            { { -1, -1, 0 } }
+        };
+        std::vector<Index> indices { 0, 1, 3, 1, 2, 3 };
+
         Mesh mesh { vertices, indices };
+        // Mesh mesh { "bunny.obj" };
         Camera camera { Window::getWidth(), Window::getHeight() };
 
         Shader taskShader { "../shader/meshshader.task" };
@@ -54,7 +67,7 @@ int main()
             commandBuffer.pushConstants(pipeline, &pushConstants);
             commandBuffer.clearBackImage({ 0.0f, 0.0f, 0.3f, 1.0f });
             commandBuffer.beginRenderPass();
-            commandBuffer.drawMeshTasks(1, 1, 1);
+            commandBuffer.drawMeshTasks(2, 1, 1);
             commandBuffer.endRenderPass();
             commandBuffer.submit();
 

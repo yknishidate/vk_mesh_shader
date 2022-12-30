@@ -8,7 +8,7 @@ layout(push_constant) uniform PushConstants {
 } pushConstants;
 
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
-layout(triangles, max_vertices = 3, max_primitives = 1) out;
+layout(triangles, max_vertices = 64, max_primitives = 64) out;
 
 struct Vertex
 {
@@ -36,21 +36,43 @@ layout(location = 0) out VertexOutput
 
 void main()
 {
-    uint primitiveID = gl_GlobalInvocationID.x / gl_NumWorkGroups.x;
-    Vertex v0 = unpackVertex(indices.i[3 * primitiveID + 0]);
-    Vertex v1 = unpackVertex(indices.i[3 * primitiveID + 1]);
-    Vertex v2 = unpackVertex(indices.i[3 * primitiveID + 2]);
-
+    // gl_NumWorkGroups.x = 5
+    // gl_WorkGroupSize.x = 1
     uint iid = gl_LocalInvocationID.x;
+    // uint primitiveID = gl_GlobalInvocationID.x / gl_NumWorkGroups.x;
+    uint i0 = indices.i[3 * iid + 0];
+    uint i1 = indices.i[3 * iid + 1];
+    uint i2 = indices.i[3 * iid + 2];
+    uint i3 = indices.i[3 * iid + 3];
+    uint i4 = indices.i[3 * iid + 4];
+    uint i5 = indices.i[3 * iid + 5];
+    Vertex v0 = unpackVertex(i0);
+    Vertex v1 = unpackVertex(i1);
+    Vertex v2 = unpackVertex(i2);
+    Vertex v3 = unpackVertex(i3);
+    Vertex v4 = unpackVertex(i4);
+    Vertex v5 = unpackVertex(i5);
+
     vec4 offset = vec4(0.0, 0.0, gl_GlobalInvocationID.x, 0.0);
 
-    SetMeshOutputsEXT(3, 1);
+    SetMeshOutputsEXT(6, 2);
     mat4 mvp = pushConstants.proj * pushConstants.view * pushConstants.model;
-    gl_MeshVerticesEXT[0].gl_Position = mvp * (vec4(v0.pos, 1) + offset);
-    gl_MeshVerticesEXT[1].gl_Position = mvp * (vec4(v1.pos, 1) + offset);
-    gl_MeshVerticesEXT[2].gl_Position = mvp * (vec4(v2.pos, 1) + offset);
-    vertexOutput[0].color = vec4(1.0, 0.0, 0.0, 1.0);
-    vertexOutput[1].color = vec4(0.0, 1.0, 0.0, 1.0);
-    vertexOutput[2].color = vec4(0.0, 0.0, 1.0, 1.0);
-    gl_PrimitiveTriangleIndicesEXT[gl_LocalInvocationIndex] =  uvec3(0, 1, 2);
+    gl_MeshVerticesEXT[i0].gl_Position = mvp * (vec4(v0.pos, 1) + offset);
+    gl_MeshVerticesEXT[i1].gl_Position = mvp * (vec4(v1.pos, 1) + offset);
+    gl_MeshVerticesEXT[i2].gl_Position = mvp * (vec4(v2.pos, 1) + offset);
+    gl_MeshVerticesEXT[i3].gl_Position = mvp * (vec4(v3.pos, 1) + offset);
+    gl_MeshVerticesEXT[i4].gl_Position = mvp * (vec4(v4.pos, 1) + offset);
+    gl_MeshVerticesEXT[i5].gl_Position = mvp * (vec4(v5.pos, 1) + offset);
+    vertexOutput[i0].color = vec4(1.0, 0.0, 0.0, 1.0);
+    vertexOutput[i1].color = vec4(0.0, 1.0, 0.0, 1.0);
+    vertexOutput[i2].color = vec4(0.0, 0.0, 1.0, 1.0);
+    vertexOutput[i3].color = vec4(1.0, 0.0, 0.0, 1.0);
+    vertexOutput[i4].color = vec4(0.0, 1.0, 0.0, 1.0);
+    vertexOutput[i5].color = vec4(0.0, 0.0, 1.0, 1.0);
+    gl_PrimitiveTriangleIndicesEXT[gl_LocalInvocationIndex] =  uvec3(i0, i1, i2);
+    gl_PrimitiveTriangleIndicesEXT[gl_LocalInvocationIndex+1] =  uvec3(i3, i4, i5);
+    //gl_PrimitiveTriangleIndicesEXT[gl_LocalInvocationIndex] =  uvec3(
+    //    indices.i[3 * iid + 0], 
+    //    indices.i[3 * iid + 1], 
+    //    indices.i[3 * iid + 2]);
 }
