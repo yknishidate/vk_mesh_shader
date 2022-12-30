@@ -10,7 +10,7 @@ int main()
 {
     try {
         Log::init();
-        Window::init(750, 750);
+        Window::init(1280, 720);
         Context::init();
 
         Swapchain swapchain {};
@@ -28,8 +28,8 @@ int main()
         Camera camera { Window::getWidth(), Window::getHeight() };
         camera.setPosition(0.0f, 0.0f, 20.0f);
 
-        Shader meshShader { "../shader/meshshader.mesh" };
-        Shader fragShader { "../shader/meshshader.frag" };
+        Shader meshShader { SHADER_DIR + "meshshader.mesh" };
+        Shader fragShader { SHADER_DIR + "meshshader.frag" };
 
         DescriptorSet descSet;
         descSet.addResources(meshShader);
@@ -50,7 +50,7 @@ int main()
             camera.processInput();
 
             gui.startFrame();
-            gui.sliderInt("Instances count", instancesCount, 1, 10);
+            gui.sliderInt("Instances", instancesCount, 1, 10);
 
             PushConstants pushConstants;
             pushConstants.model = glm::rotate(glm::mat4(1.0f), 0.01f * frame, glm::vec3(0.0f, 1.0f, 0.0f));
