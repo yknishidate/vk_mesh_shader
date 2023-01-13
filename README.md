@@ -19,7 +19,7 @@ WARN: You need the [Vulkan Beta Driver](https://developer.nvidia.com/vulkan-driv
 
 Ray Query from Mesh shading pipeline
 
-![Reactive   FPS = 60 00 1_13_2023 3_18_53 PM](https://user-images.githubusercontent.com/30839669/212251096-21a084dd-1a76-4816-bf6f-b024d8ff2e65.png)
+![Reactive   FPS = 59 00 1_13_2023 3_30_16 PM](https://user-images.githubusercontent.com/30839669/212252858-fd65b43c-bfe9-4df2-990a-6e62dba10d6b.png)
 
 
 ## Reference
