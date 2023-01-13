@@ -19,6 +19,8 @@ layout(location = 0) out VertexOutput {
 
 void main()
 {
+    vec3 lightDirection = vec3(1, -1, 1);
+
     uint primitiveID = gl_GlobalInvocationID.x;
     uint meshID = gl_GlobalInvocationID.y;
     uint i0 = indices.i[3 * primitiveID + 0];

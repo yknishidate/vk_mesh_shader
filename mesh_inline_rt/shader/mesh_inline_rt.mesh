@@ -1,0 +1,92 @@
+#version 460
+#extension GL_EXT_mesh_shader : require
+#extension GL_EXT_ray_query : enable
+
+layout(push_constant) uniform PushConstants {
+    mat4 model;
+    mat4 view;
+    mat4 proj;
+    int subdivision;
+} pushConstants;
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+layout(triangles, max_vertices = 3, max_primitives = 1) out;
+
+struct Vertex {
+    vec3 pos;
+    vec3 normal;
+    vec2 texCoord;
+};
+layout(binding = 0) buffer Vertices{float v[];} vertices;
+layout(binding = 1) buffer Indices{uint i[];} indices;
+layout(binding = 2) uniform accelerationStructureEXT topLevelAS;
+
+Vertex unpack(uint index)
+{
+    uint vertexSize = 8;
+    uint offset = index * vertexSize;
+    Vertex v;
+    v.pos       = vec3(vertices.v[offset +  0], vertices.v[offset +  1], vertices.v[offset + 2]);
+    v.normal    = vec3(vertices.v[offset +  3], vertices.v[offset +  4], vertices.v[offset + 5]);
+    v.texCoord  = vec2(vertices.v[offset +  6], vertices.v[offset +  7]);
+    return v;
+}
+
+layout(location = 0) out VertexOutput {
+    vec4 color;
+    vec4 normal;
+    vec4 position;
+} vertexOutput[];
+
+void main() {
+    vec3 lightDirection = vec3(1, -1, 1);
+
+    uint primID = gl_GlobalInvocationID.x;
+
+    uint i0 = indices.i[3 * primID + 0]; 
+    uint i1 = indices.i[3 * primID + 1]; 
+    uint i2 = indices.i[3 * primID + 2];
+    Vertex vs[] = {
+        unpack(i0),
+        unpack(i1),
+        unpack(i2),
+    };
+
+    vec3 normal = normalize((vs[0].normal + vs[1].normal + vs[2].normal) / 3.0);
+    vec3 position = (vs[0].pos + vs[1].pos + vs[2].pos) / 3.0;
+    normal = vec3(pushConstants.model * vec4(vs[0].normal, 1));
+    //float lighting = max(0.0, dot(normal, lightDirection));
+    float lighting = 1.0;
+    
+    //rayQueryEXT rayQuery;
+    //rayQueryInitializeEXT(
+    //    rayQuery,
+    //    topLevelAS,
+    //    gl_RayFlagsTerminateOnFirstHitEXT, // rayFlags
+    //    0xFF,                              // cullMask
+    //    position,                          // origin
+    //    0.001,                              // tMin
+    //    lightDirection,                    // direction
+    //    1000.0                              // tMax
+    //);
+    //while (rayQueryProceedEXT(rayQuery)) { }
+    //if (rayQueryGetIntersectionTypeEXT(rayQuery, true) == gl_RayQueryCommittedIntersectionTriangleEXT ) {
+    //    lighting *= 0.2;
+    //}
+    
+    SetMeshOutputsEXT(3, 1);
+    mat4 mvp = pushConstants.proj * pushConstants.view * pushConstants.model;
+    gl_MeshVerticesEXT[0].gl_Position = mvp * vec4(vs[0].pos, 1);
+    gl_MeshVerticesEXT[1].gl_Position = mvp * vec4(vs[1].pos, 1);
+    gl_MeshVerticesEXT[2].gl_Position = mvp * vec4(vs[2].pos, 1);
+    vertexOutput[0].color = vec4(1.0) * lighting;
+    vertexOutput[1].color = vec4(1.0) * lighting;
+    vertexOutput[2].color = vec4(1.0) * lighting;
+    vertexOutput[0].normal.xyz = vs[0].normal;
+    vertexOutput[1].normal.xyz = vs[1].normal;
+    vertexOutput[2].normal.xyz = vs[2].normal;
+    vertexOutput[0].position = pushConstants.model * vec4(vs[0].pos, 1);
+    vertexOutput[1].position = pushConstants.model * vec4(vs[1].pos, 1);
+    vertexOutput[2].position = pushConstants.model * vec4(vs[2].pos, 1);
+    gl_PrimitiveTriangleIndicesEXT[gl_LocalInvocationIndex] =  uvec3(0, 1, 2);
+}

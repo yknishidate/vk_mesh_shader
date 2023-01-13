@@ -13,3 +13,4 @@ add_subdirectory(Reactive)
 
 add_subdirectory(hello_mesh_shader)
 add_subdirectory(gpu_subdivision)
+add_subdirectory(mesh_inline_rt)
