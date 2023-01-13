@@ -21,14 +21,15 @@ int main() {
         // DeviceBuffer indexBuffer{BufferUsage::Storage, indices};
         // std::vector<Mesh> meshes;
         // Loader::loadFromFile(ASSET_DIR + "CornellBox/CornellBox-Glossy.obj", meshes);
-        Mesh bunny{"bunny.obj"};
+        Mesh bunny{"bunny_and_teapot.obj"};
         Object bunnyInstance{bunny};
         TopAccel topAccel{bunnyInstance};
 
         Camera camera{Window::getWidth(), Window::getHeight()};
+        camera.setPosition(0, -5, 15);
 
-        Shader meshShader{SHADER_DIR + "mesh_inline_rt.mesh"};
-        Shader fragShader{SHADER_DIR + "mesh_inline_rt.frag"};
+        Shader meshShader{SHADER_DIR + "mesh_ray_query.mesh"};
+        Shader fragShader{SHADER_DIR + "mesh_ray_query.frag"};
 
         DescriptorSet descSet;
         descSet.addResources(meshShader);
@@ -56,7 +57,7 @@ int main() {
 
             CommandBuffer commandBuffer = swapchain.beginCommandBuffer();
             commandBuffer.bindPipeline(pipeline);
-            commandBuffer.clearBackImage({0.2f, 0.2f, 0.2f, 1.0f});
+            commandBuffer.clearBackImage({0.0f, 0.0f, 0.2f, 1.0f});
             commandBuffer.beginRenderPass();
 
             constants.subdivision = 0;

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-set(TARGET_NAME "mesh_inline_rt")
+set(TARGET_NAME "mesh_ray_query")
 
 file(GLOB_RECURSE shaders shader/*)
 add_executable(${TARGET_NAME} main.cpp ${shaders})
