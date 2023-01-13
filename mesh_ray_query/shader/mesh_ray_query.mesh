@@ -39,7 +39,7 @@ layout(location = 0) out VertexOutput {
 } vertexOutput[];
 
 void main() {
-    vec3 lightDirection = vec3(1, -1, 1);
+    vec3 lightDir = normalize(vec3(1, -1, 2));
 
     uint primID = gl_GlobalInvocationID.x;
 
@@ -55,24 +55,23 @@ void main() {
     vec3 normal = normalize((vs[0].normal + vs[1].normal + vs[2].normal) / 3.0);
     vec3 position = (vs[0].pos + vs[1].pos + vs[2].pos) / 3.0;
     normal = vec3(pushConstants.model * vec4(vs[0].normal, 1));
-    //float lighting = max(0.0, dot(normal, lightDirection));
-    float lighting = 1.0;
+    float lighting = dot(normal, lightDir);
     
-    //rayQueryEXT rayQuery;
-    //rayQueryInitializeEXT(
-    //    rayQuery,
-    //    topLevelAS,
-    //    gl_RayFlagsTerminateOnFirstHitEXT, // rayFlags
-    //    0xFF,                              // cullMask
-    //    position,                          // origin
-    //    0.001,                              // tMin
-    //    lightDirection,                    // direction
-    //    1000.0                              // tMax
-    //);
-    //while (rayQueryProceedEXT(rayQuery)) { }
-    //if (rayQueryGetIntersectionTypeEXT(rayQuery, true) == gl_RayQueryCommittedIntersectionTriangleEXT ) {
-    //    lighting *= 0.2;
-    //}
+    rayQueryEXT rayQuery;
+    rayQueryInitializeEXT(
+        rayQuery,
+        topLevelAS,
+        gl_RayFlagsOpaqueEXT, // rayFlags
+        0xFF, // cullMask
+        position, // origin
+        0.01, // tMin
+        lightDir, // direction
+        100.0 // tMax
+    );
+    while (rayQueryProceedEXT(rayQuery)) { }
+    if (rayQueryGetIntersectionTypeEXT(rayQuery, true) != gl_RayQueryCommittedIntersectionNoneEXT ) {
+        lighting *= 0.1;
+    }
     
     SetMeshOutputsEXT(3, 1);
     mat4 mvp = pushConstants.proj * pushConstants.view * pushConstants.model;
